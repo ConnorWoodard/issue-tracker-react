@@ -6,6 +6,7 @@ import BugList from './components/bugs';
 import BugListItem from './components/bugitem';
 import UserList from './components/users';
 import UserListItem from './components/useritem';
+import Navbar from './components/navbar';
 
 const App = () => {
   // State to manage the current screen
@@ -29,6 +30,7 @@ const App = () => {
 
   return (
     <Router>
+      <Navbar/>
       <Routes>
         <Route
           path="/"
