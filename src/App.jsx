@@ -33,8 +33,8 @@ const App = () => {
       <Navbar/>
       <Routes>
         <Route
-          path="/"
-          element={<div>Home Page</div>}
+          path="/login"
+          element={<LoginForm onLogin={handleLogin} onSwitchScreen={() => switchScreen('register')} />}
         />
         <Route
           path="/login"

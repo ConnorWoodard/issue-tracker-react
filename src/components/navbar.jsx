@@ -11,13 +11,13 @@ const CustomNavbar = () => {
   return (
     <Navbar style={gradientBackground} expand="lg" variant="dark">
       <Container fluid>
-        <Navbar.Brand as={Link} to="/" className="text-white">
+        <Navbar.Brand as={Link} to="/login" className="text-white">
           Bug Tracker
         </Navbar.Brand>
         <Navbar.Toggle aria-controls="navbarScroll" className="custom-toggler-icon" />
         <Navbar.Collapse id="navbarScroll">
           <Nav className="me-auto" navbarScroll>
-            <Nav.Link as={Link} to="/" className="text-white">
+            <Nav.Link as={Link} to="/login" className="text-white">
               Home
             </Nav.Link>
             <Nav.Link as={Link} to="/login" className="text-white">
