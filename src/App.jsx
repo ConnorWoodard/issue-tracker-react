@@ -1,12 +1,18 @@
 import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import LoginForm from './components/login';
-import RegisterForm from './components/register';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import LoginForm from './components/LoginForm';
+import RegisterForm from './components/RegisterForm';
 import BugList from './components/bugs';
 import BugListItem from './components/bugitem';
 import UserList from './components/users';
 import UserListItem from './components/useritem';
-import Navbar from './components/navbar';
+import CustomNavbar from './components/CustomNavbar';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.min.css';
+import Footer from './components/Footer';
+
+
+
 
 const App = () => {
   // State to manage the current screen
@@ -28,42 +34,47 @@ const App = () => {
     switchScreen('home');
   };
 
+  function showError(message) {
+    toast(message, { type: 'error', position: 'bottom-right' });
+  }
+
+  function showSuccess(message) {
+    toast(message, { type: 'success', position: 'bottom-right' });
+  }
+
+  const [auth, setAuth] = useState(null);
+
+  const navigate = useNavigate();
+
+  function onLogin(auth) {
+    setAuth(auth);
+    navigate('/bug/list');
+    showSuccess('Logged in!');
+  }
+  function onLogout() {
+    setAuth(null);
+    navigate('/login');
+    showSuccess('Logged out!');
+  }
+
   return (
-    <Router>
-      <Navbar/>
+    <>
+      <CustomNavbar auth={auth} onLogout={onLogout}/>
+      <ToastContainer />
+      <main className='container my-5'>
       <Routes>
-        <Route
-          path="/login"
-          element={<LoginForm onLogin={handleLogin} onSwitchScreen={() => switchScreen('register')} />}
-        />
-        <Route
-          path="/login"
-          element={<LoginForm onLogin={handleLogin} onSwitchScreen={() => switchScreen('register')} />}
-        />
-        <Route
-          path="/register"
-          element={<RegisterForm onSwitchScreen={() => switchScreen('login')} />}
-        />
-        <Route
-          path="/bugs"
-          element={<BugList bugs={[{ id: '1', title: 'Sample Bug 1', description: 'Description 1' }, { id: '2', title: 'Sample Bug 2', description: 'Description 2' }]} />}
-        />
-        {/* Route for bug details */}
-        <Route
-          path="/bug/:id"
-          element={<BugListItem bug={{ id: '1', title: 'Sample Bug 1', description: 'Description 1' }} />}
-        />
-        <Route
-          path="/users"
-          element={<UserList users={[{ id: '1', name: 'John Doe' }, { id: '2', name: 'Jane Doe' }]} />}
-        />
-        <Route
-          path="/user/:id"
-          element={<UserListItem user={{ id: '1', name: 'John Doe' }} />}
-        />
-        {/* Add other routes as needed */}
+        <Route path="/" element={<Navigate to="/login" />} />
+        <Route path="/login" element={<LoginForm onLogin={handleLogin} onSwitchScreen={() => switchScreen('register')} />} />
+        <Route path="/register" element={<RegisterForm onSwitchScreen={() => switchScreen('login')} />} />
+        <Route path="/bug/list" element={<BugList />} />
+        {/* <Route path="/bug/:bugId" element={<BugEditor />} /> */}
+        <Route path="/user/list" element={<UserList />} />
+        {/* <Route path="/user/:userId" element={<UserEditor />} /> */}
+        {/* <Route path="*" element={<NotFound />} /> */}
       </Routes>
-    </Router>
+      </main>
+      <Footer />
+    </>
   );
 };
 
