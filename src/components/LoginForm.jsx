@@ -1,9 +1,18 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import { MDBBtn, MDBContainer, MDBRow, MDBCol, MDBCard, MDBCardBody, MDBInput } from 'mdb-react-ui-kit';
+import { Link } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.min.css';
 import '../register.css';
 
-function LoginForm({ onLogin, onNavigateToRegister }) {
+function LoginForm({ onLogin, onNavigateToRegister, showError }) {
   const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+  });
+
+  const [errors, setErrors] = useState({
     email: '',
     password: '',
   });
@@ -12,15 +21,54 @@ function LoginForm({ onLogin, onNavigateToRegister }) {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Check if the entered credentials are valid
-    if (formData.email === 'admin@example.com' && formData.password === 'password') {
-      // Call the login event handler
-      onLogin();
-    } else {
-      // Handle invalid credentials
-      alert('Invalid email or password');
+
+    // Validate email
+    if (!formData.email || !formData.email.includes('@')) {
+      setErrors((prevErrors) => ({ ...prevErrors, email: 'Invalid email address' }));
+      // Display error message using the showError prop
+      showError('Invalid form data. Please check the errors.');
+      return;
+    }
+
+    // Validate password
+    if (!formData.password || formData.password.length < 8) {
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        password: 'Password must be at least 8 characters long',
+      }));
+      // Display error message using the showError prop
+      showError('Invalid form data. Please check the errors.');
+      return;
+    }
+
+    try {
+      // Send POST request to login endpoint with credentials
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/user/login`, formData, {
+        withCredentials: true,
+      });
+
+      // If successful, call the onLogin handler
+      onLogin(response.data); // Assuming your API returns the user data
+
+      // Reset form data and clear error messages
+      setFormData({ email: '', password: '' });
+      setErrors({ email: '', password: '' });
+
+      // Display success message as a toast
+      toast.success('Login successful!');
+    } catch (err) {
+      // Handle errors
+      const errorMessage = err?.response?.data?.error || err.message;
+      const errorDetails = err?.response?.data?.error?.details;
+
+      // Display error message as a toast
+      toast.error(errorMessage);
+
+      if (errorDetails) {
+        console.error(errorDetails); // Log detailed error information
+      }
     }
   };
 
@@ -45,6 +93,8 @@ function LoginForm({ onLogin, onNavigateToRegister }) {
                   value={formData.email}
                   onChange={handleChange}
                 />
+                {errors.email && <div className="text-danger mb-3">{errors.email}</div>}
+
                 <MDBInput
                   wrapperClass='mb-4 mx-auto w-75'
                   labelClass='text-white'
@@ -56,6 +106,8 @@ function LoginForm({ onLogin, onNavigateToRegister }) {
                   value={formData.password}
                   onChange={handleChange}
                 />
+                {errors.password && <div className="text-danger mb-3">{errors.password}</div>}
+
                 <MDBBtn
                   outline
                   className='mb-4 mx-auto w-75 d-flex justify-content-center'
@@ -68,13 +120,13 @@ function LoginForm({ onLogin, onNavigateToRegister }) {
                 </MDBBtn>
               </form>
 
-              <p className="small mb-3 pb-lg-2"><a className="text-white-50" href="#!">Forgot password?</a></p>
+              <p className="small mb-3 pb-lg-2"><Link to="/forgot-password" className="text-white-50">Forgot password?</Link></p>
               <div className='d-flex flex-row mt-3 mb-5'>
-                {/* ... social media buttons */}
+                {/* ... (social media buttons) */}
               </div>
 
               <div>
-                <p className="mb-0">Don't have an account? <a href="/register" className="text-white-50 fw-bold" onClick={onNavigateToRegister}>Sign Up</a></p>
+                <p className="mb-0">Don't have an account? <Link to="/register" className="text-white-50 fw-bold" onClick={onNavigateToRegister}>Sign Up</Link></p>
               </div>
             </MDBCardBody>
           </MDBCard>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import UserListItem from './useritem';
-import UserEditor from './usereditor'; // Import your UserEditor component
+import UserListItem from './UserListItem';
+import UserEditor from './UserEditor'; // Import your UserEditor component
 
 const UserList = ({ users }) => {
   const [selectedUser, setSelectedUser] = useState(null);

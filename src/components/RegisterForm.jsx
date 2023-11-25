@@ -1,29 +1,24 @@
-import React, { useEffect, useState } from 'react';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import { nanoid } from 'nanoid';
+import React, { useState } from 'react';
 import axios from 'axios';
-import {
-  MDBBtn,
-  MDBContainer,
-  MDBRow,
-  MDBCol,
-  MDBCard,
-  MDBCardBody,
-  MDBInput,
-  MDBCheckbox,
-  MDBIcon,
-} from 'mdb-react-ui-kit';
-import '../register.css';
+import { MDBBtn, MDBContainer, MDBRow, MDBCol, MDBCard, MDBCardBody, MDBInput } from 'mdb-react-ui-kit';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.min.css';
 
-const RegisterForm = () => {
+const RegisterForm = ({ onLogin, showError }) => {
   const [formData, setFormData] = useState({
-    id: nanoid(),
     email: '',
     password: '',
-    fullName: '',
     givenName: '',
     familyName: '',
-    role: '',
+    fullName: '', // Added fullName field
+  });
+
+  const [errors, setErrors] = useState({
+    email: '',
+    password: '',
+    givenName: '',
+    familyName: '',
+    fullName: '',
   });
 
   const handleChange = (e) => {
@@ -33,36 +28,90 @@ const RegisterForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Validate form fields
+    if (!validateForm()) {
+      showError('Invalid form data. Please check the errors.');
+      return;
+    }
+
     try {
-      const response = await axios.post('/api/user/register', formData);
-      console.log('Registration successful:', response.data);
+      // Send POST request to register endpoint with form data
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/user/register`, formData,{
+        withCredentials: true,
+      });
+      
+      // If successful, call the onLogin handler
+      onLogin(response.data); // Assuming your API returns the user data
+
+      // Reset form data and clear error messages
       setFormData({
-        id: nanoid(),
         email: '',
         password: '',
-        fullName: '',
         givenName: '',
         familyName: '',
-        role: '',
+        fullName: '',
       });
-      // Call the registration success event handler if needed
-    } catch (error) {
-      console.error('Registration failed:', error.message);
-      // Handle registration failure as needed
+      setErrors({
+        email: '',
+        password: '',
+        givenName: '',
+        familyName: '',
+        fullName: '',
+      });
+
+      // Display success message as a toast
+      toast.success('Registration successful!');
+    } catch (err) {
+      // Handle errors
+      const errorMessage = err?.response?.data?.error || err.message;
+      const errorDetails = err?.response?.data?.error?.details;
+
+      // Display error message using the showError prop
+      showError(errorMessage);
+
+      if (errorDetails) {
+        console.error(errorDetails); // Log detailed error information
+      }
     }
   };
 
-  const handleLoginLinkClick = () => {
-    console.log('Navigate to login screen');
-    // Handle navigation to login screen logic here
-  };
+  const validateForm = () => {
+    let isValid = true;
+    const newErrors = {};
 
-  useEffect(() => {
-    const formElement = document.getElementById('registerForm');
-    if (formElement) {
-      formElement.classList.add('slide-in-blurred-top');
+    // Validate email
+    if (!formData.email || !formData.email.includes('@')) {
+      newErrors.email = 'Invalid email address';
+      isValid = false;
     }
-  }, []);
+
+    // Validate password
+    if (!formData.password || formData.password.length < 8) {
+      newErrors.password = 'Password must be at least 8 characters long';
+      isValid = false;
+    }
+
+    // Validate givenName and familyName
+    if (!formData.givenName) {
+      newErrors.givenName = 'Given name is required';
+      isValid = false;
+    }
+
+    if (!formData.familyName) {
+      newErrors.familyName = 'Family name is required';
+      isValid = false;
+    }
+
+    // Validate fullName
+    if (!formData.fullName) {
+      newErrors.fullName = 'Full name is required';
+      isValid = false;
+    }
+
+    setErrors(newErrors);
+    return isValid;
+  };
 
   return (
     <MDBContainer fluid className='p-4 background-radial-gradient overflow-hidden slide-in-blurred-top'>
@@ -82,37 +131,29 @@ const RegisterForm = () => {
           <div id="radius-shape-1" className="position-absolute rounded-circle shadow-5-strong"></div>
           <div id="radius-shape-2" className="position-absolute shadow-5-strong"></div>
 
-          <MDBCard className='my-5 bg-dark text-white'>
+          <MDBCard className='my-5 bg-grey text-white'>
             <MDBCardBody className='p-5'>
               <MDBRow>
                 <MDBCol col='6'>
-                  <MDBInput wrapperClass='mb-4' label='First name' id='form1' type='text' name='firstName' value={formData.firstName} onChange={handleChange} />
+                  <MDBInput wrapperClass='mb-4' label='First name' id='form1' type='text' name='givenName' value={formData.givenName} onChange={handleChange} />
+                  {errors.givenName && <div className="text-danger mb-3">{errors.givenName}</div>}
                 </MDBCol>
                 <MDBCol col='6'>
-                  <MDBInput wrapperClass='mb-4' label='Last name' id='form2' type='text' name='lastName' value={formData.lastName} onChange={handleChange} />
+                  <MDBInput wrapperClass='mb-4' label='Last name' id='form2' type='text' name='familyName' value={formData.familyName} onChange={handleChange} />
+                  {errors.familyName && <div className="text-danger mb-3">{errors.familyName}</div>}
                 </MDBCol>
               </MDBRow>
               <MDBInput wrapperClass='mb-4' label='Email' id='form3' type='email' name='email' value={formData.email} onChange={handleChange} />
+              {errors.email && <div className="text-danger mb-3">{errors.email}</div>}
+
               <MDBInput wrapperClass='mb-4' label='Password' id='form4' type='password' name='password' value={formData.password} onChange={handleChange} />
-              <MDBBtn className='w-100 mb-4' size='md' onClick={handleSubmit}>sign up</MDBBtn>
-              <div className="text-center">
-                <p>or sign up with:</p>
-                <MDBBtn tag='a' color='none' className='mx-3' style={{ color: '#1266f1' }}>
-                  <MDBIcon fab icon='facebook-f' size="sm" />
-                </MDBBtn>
-                <MDBBtn tag='a' color='none' className='mx-3' style={{ color: '#1266f1' }}>
-                  <MDBIcon fab icon='twitter' size="sm" />
-                </MDBBtn>
-                <MDBBtn tag='a' color='none' className='mx-3' style={{ color: '#1266f1' }}>
-                  <MDBIcon fab icon='google' size="sm" />
-                </MDBBtn>
-                <MDBBtn tag='a' color='none' className='mx-3' style={{ color: '#1266f1' }}>
-                  <MDBIcon fab icon='github' size="sm" />
-                </MDBBtn>
-              </div>
-              <div className='text-center'>
-                <p className="mb-0">Have an Account? <a href="/login" className="text-white-50 fw-bold" onClick={handleLoginLinkClick}>Sign In</a></p>
-              </div>
+              {errors.password && <div className="text-danger mb-3">{errors.password}</div>}
+
+              {/* New fullName input */}
+              <MDBInput wrapperClass='mb-4' label='Full Name' id='form-fullname' type='text' name='fullName' value={formData.fullName} onChange={handleChange} />
+              {errors.fullName && <div className="text-danger mb-3">{errors.fullName}</div>}
+
+              <MDBBtn className='w-100 mb-4' size='md' onClick={handleSubmit}>Sign up</MDBBtn>
             </MDBCardBody>
           </MDBCard>
         </MDBCol>

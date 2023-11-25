@@ -48,12 +48,12 @@ const CustomNavbar = ({ auth, onLogout }) => {
             {auth && (
               <>
                 <li className="nav-item">
-                  <Link to="/users" className="nav-link text-white">
+                  <Link to="/user/list" className="nav-link text-white">
                     Users
                   </Link>
                 </li>
                 <li className="nav-item">
-                  <Link to="/bugs" className="nav-link text-white">
+                  <Link to="/bug/list" className="nav-link text-white">
                     Bugs
                   </Link>
                 </li>
