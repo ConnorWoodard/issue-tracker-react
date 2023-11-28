@@ -1,107 +1,146 @@
-import React, { useState } from 'react';
-import { MDBContainer, MDBRow, MDBCol, MDBCard, MDBCardBody, MDBInput, MDBBtn } from 'mdb-react-ui-kit';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { useParams, useNavigate } from 'react-router-dom';
+import Joi from 'joi';
 
-const BugEditor = ({ bug, onSave }) => {
-  const [formData, setFormData] = useState({
-    title: bug.title || '',
-    description: bug.description || '',
-    // Add other form fields as needed
-  });
+// const bugInputSchema = Joi.object({
+//   title: Joi.string().min(1).max(50),
+//   description: Joi.string().min(10),
+//   stepsToReproduce: Joi.string().min(10),
+// });
 
-  const [validationErrors, setValidationErrors] = useState({
+const BugEditor = ({ showError, showSuccess }) => {
+  const { bugId } = useParams();
+  const navigate = useNavigate();
+
+  const [bug, setBug] = useState({
     title: '',
     description: '',
-    // Add other validation errors as needed
+    stepsToReproduce: '',
   });
 
-  const validateForm = () => {
-    const errors = {};
-    if (!formData.title.trim()) {
-      errors.title = 'Title is required';
-    }
-    if (!formData.description.trim()) {
-      errors.description = 'Description is required';
-    }
-    // Add other validation rules as needed
-    return errors;
-  };
+  const { title, description, stepsToReproduce } = bug;
 
-  const handleChange = (e) => {
+  useEffect(() => {
+    axios
+      .get(`${import.meta.env.VITE_API_URL}/api/bug/${bugId}`, {
+        withCredentials: true,
+      })
+      .then((response) => {
+        setBug(response.data);
+      })
+      .catch((error) => {
+        showError('Error fetching bug details. Please try again.');
+        console.error('Error fetching bug details:', error);
+      });
+  }, [bugId, showError]);
+
+  const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prevData) => ({ ...prevData, [name]: value }));
-    setValidationErrors((prevErrors) => ({ ...prevErrors, [name]: '' }));
+
+    setBug((prevBug) => ({
+      ...prevBug,
+      [name]: value,
+    }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-
-    const errors = validateForm();
-    if (Object.keys(errors).length === 0) {
-      // No validation errors, call the onSave event handler
-      onSave(formData);
-    } else {
-      // Update validation errors
-      setValidationErrors(errors);
+  
+    // const validationResult = bugInputSchema.validate(bug);
+  
+    // if (validationResult.error) {
+    //   showError(validationResult.error.message);
+    //   return;
+    // }
+  
+    try {
+      const bugData = { ...bug };
+      delete bugData._id;
+      delete bugData.classification;
+      delete bugData.closed;
+      delete bugData.createdOn;
+      delete bugData.author;
+      delete bugData.fixed;
+      delete bugData.lastUpdatedBy;
+      delete bugData.lastUpdatedOn;
+      delete bugData.classifiedBy;
+      delete bugData.classifiedOn;
+      delete bugData.assignedBy;
+      delete bugData.assignedOn;
+      delete bugData.assignedToUserId;
+      delete bugData.closedBy;
+      delete bugData.closedOn;
+      delete bugData.lastUpdated;
+      delete bugData.comments;
+      delete bugData.testCases;
+      delete bugData.creationDate;
+      delete bugData.assignedTo;
+      delete bugData.timeLog;
+      console.log(JSON.stringify(bugData));
+      await axios.put(
+        `${import.meta.env.VITE_API_URL}/api/bug/${bugId}`,
+        bugData,
+        {
+          withCredentials: true,
+        }
+      );
+  
+      showSuccess('Bug updated successfully');
+      navigate('/bug/list'); // Redirect to bug list after a successful update
+    } catch (error) {
+      showError('Error updating bug. Please try again.');
+      console.error('Error updating bug:', error);
     }
   };
+  
 
   return (
-    <MDBContainer fluid>
-      <MDBRow className='d-flex justify-content-center align-items-center h-100'>
-        <MDBCol col='12'>
-          <MDBCard className='my-5 mx-auto' style={{ borderRadius: '1rem', maxWidth: '600px', background: '#343a40' }}>
-            <MDBCardBody className='p-5'>
-              <h2 className="fw-bold mb-2 text-uppercase" style={{ color: '#007bff' }}>Edit Bug</h2>
-
-              <form onSubmit={handleSubmit} className="w-100">
-                <MDBInput
-                  wrapperClass='mb-4 mx-auto w-75'
-                  labelClass='text-white'
-                  label='Title'
-                  id='title'
-                  type='text'
-                  name='title'
-                  size="lg"
-                  value={formData.title}
-                  onChange={handleChange}
-                  errorMessage={validationErrors.title}
-                  background='#424242'
-                  outline
-                />
-
-                <MDBInput
-                  wrapperClass='mb-4 mx-auto w-75'
-                  labelClass='text-white'
-                  label='Description'
-                  id='description'
-                  type='textarea'
-                  name='description'
-                  size="lg"
-                  value={formData.description}
-                  onChange={handleChange}
-                  errorMessage={validationErrors.description}
-                  background='#424242'
-                  outline
-                />
-
-                {/* Add other form fields as needed */}
-
-                <MDBBtn
-                  outline
-                  className='mb-4 mx-auto w-75 d-flex justify-content-center'
-                  color='white'
-                  size='lg'
-                  type="submit"
-                  style={{ background: '#007bff', borderColor: '#007bff', width: '75%' }}
-                >
-                  Save
-                </MDBBtn>
-              </form>
-            </MDBCardBody>
-          </MDBCard>
-        </MDBCol>
-      </MDBRow>
-    </MDBContainer>
+    <>
+      <h1>Bug Editor</h1>
+      <form onSubmit={handleSubmit}>
+        <div className='mb-3'>
+          <label htmlFor='title' className='form-label'>
+            Title
+          </label>
+          <input
+            type='text'
+            className='form-control'
+            id='title'
+            name='title'
+            value={title}
+            onChange={handleInputChange}
+          />
+        </div>
+        <div className='mb-3'>
+          <label htmlFor='description' className='form-label'>
+            Description
+          </label>
+          <textarea
+            className='form-control'
+            id='description'
+            name='description'
+            value={description}
+            onChange={handleInputChange}
+          />
+        </div>
+        <div className='mb-3'>
+          <label htmlFor='stepsToReproduce' className='form-label'>
+            Steps to Reproduce
+          </label>
+          <textarea
+            className='form-control'
+            id='stepsToReproduce'
+            name='stepsToReproduce'
+            value={stepsToReproduce}
+            onChange={handleInputChange}
+          />
+        </div>
+        <button type='submit' className='btn btn-primary'>
+          Update Bug
+        </button>
+      </form>
+    </>
   );
 };
 

@@ -87,15 +87,26 @@
 
 // export default BugListItem;
 
-import React from 'react';
-import moment from 'moment';
-import { Link, useParams } from 'react-router-dom';
-import axios from 'axios';
-import { useEffect, useState } from 'react';
+// import React from 'react';
+// import moment from 'moment';
+// import { Link, useParams } from 'react-router-dom';
+// import axios from 'axios';
+// import { useEffect, useState } from 'react';
 
-const BugListItem = () => {
-  const [bug, setBug] = useState(null);
-  const { bugId } = useParams();
+// const BugListItem = () => {
+//   const [bug, setBug] = useState(null);
+//   const { bugId } = useParams();
+
+
+  
+  // BugListItem.jsx
+import React, { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import axios from 'axios';
+import { Link } from 'react-router-dom';
+
+const BugListItem = ({ bug }) => {
+  //const [bugDetails, setBugDetails] = useState(null);
 
   const getStatusBadgeColor = () => {
     return bug && bug.closed ? 'bg-danger' : 'bg-success';
@@ -106,6 +117,7 @@ const BugListItem = () => {
       case 'approved':
         return 'bg-success';
       case 'unapproved':
+      case 'Unapproved':
       case 'duplicate':
         return 'bg-danger';
       case 'unclassified':
@@ -114,44 +126,43 @@ const BugListItem = () => {
         return 'bg-light';
     }
   };
-  
-  useEffect(() => {
-    const fetchBug = async () => {
-      try {
-        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/bug/${bugId}`, {
-          withCredentials: true,
-        });
 
-        setBug(response.data);
-      } catch (error) {
-        console.error('Error loading bug:', error);
-        // Handle error, e.g., show an error message to the user
-      }
-    };
+  // useEffect(() => {
+  //   const fetchBug = async () => {
+  //     try {
+  //       const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/bug/${bug.id}`, {
+  //         withCredentials: true,
+  //       });
 
-    fetchBug();
-  }, [bugId]);
+  //       setBugDetails(response.data);
+  //     } catch (error) {
+  //       console.error('Error loading bug:', error);
+  //       // Handle error, e.g., show an error message to the user
+  //     }
+  //   };
 
-  if (!bug) {
-    // Render a loading state or return null when bug is still null
-    return null;
-  }
+  //   fetchBug();
+  // }, [bug.id]);
+
+  // if (!bugDetails) {
+  //   // Render a loading state or return null when bugDetails is still null
+  //   return null;
+  // }
 
   return (
-    <div className='mb-3'>
-      <div className='card'>
+    <div className='mb-3 container-fluid'>
+      <div className='card bug-card'>
         <div className='card-body'>
           <h5 className='card-title'>{bug.title}</h5>
           <p className='card-text'>Description: {bug.description}</p>
           <p className='card-text'>Steps to Reproduce: {bug.stepsToReproduce}</p>
-          {/* <p className='card-text'>Assigned to: {bug.assignedTo}</p> */}
           <span className={`badge me-2 ${getClassificationBadgeColor()}`}>{bug.classification}</span>
           <span className={`badge ${getStatusBadgeColor()}`}>{bug.closed ? 'Closed' : 'Open'}</span>
         </div>
         <div className='card-footer'>
-          {/* Rest of your code */}
+        <Link to={`/bug/${bug._id}`}>View Bug</Link>&nbsp;&nbsp;
+        <Link to={`/bug/${bug._id}`}>Edit Bug</Link>
         </div>
-        {/* More card-footers and other content */}
       </div>
     </div>
   );

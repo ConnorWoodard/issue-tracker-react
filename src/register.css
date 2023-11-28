@@ -105,3 +105,32 @@
     opacity: 1;
   }
 }
+
+
+/* Add this to your global or component CSS */
+.pagination-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+.page-info {
+  font-size: 16px;
+  color: #fff; /* Set your text color */
+}
+
+.pagination-button {
+  background-color: #6f42c1; /* Set your button color */
+  color: #fff; /* Set your text color */
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.pagination-button:disabled {
+  background-color: #ccc; /* Set your disabled button color */
+  cursor: not-allowed;
+}

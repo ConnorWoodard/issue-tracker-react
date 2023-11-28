@@ -1,116 +1,150 @@
-import React, { useState } from 'react';
-import { MDBContainer, MDBRow, MDBCol, MDBCard, MDBCardBody, MDBInput, MDBBtn } from 'mdb-react-ui-kit';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { useParams, useNavigate } from 'react-router-dom';
 
-const UserEditor = ({ user, onSave, onClose }) => {
-  const [formData, setFormData] = useState({
-    fullName: user.fullName || '',
-    email: user.email || '',
-    // Add other form fields as needed
-  });
+const UserEditor = ({ showError, showSuccess }) => {
+  const { userId } = useParams();
+  const navigate = useNavigate();
 
-  const [validationErrors, setValidationErrors] = useState({
-    fullName: '',
+  const [user, setUser] = useState({
     email: '',
-    // Add other validation errors as needed
+    password: '', // not returned by API
+    givenName: '',
+    familyName: '',
+    fullName: '',
+    role: '',
   });
 
-  const validateForm = () => {
-    const errors = {};
-    if (!formData.fullName.trim()) {
-      errors.fullName = 'Full Name is required';
-    }
-    if (!formData.email.trim()) {
-      errors.email = 'Email is required';
-    } else if (!isValidEmail(formData.email)) {
-      errors.email = 'Invalid email format';
-    }
-    // Add other validation rules as needed
-    return errors;
-  };
+  const { email, givenName, familyName, fullName, role } = user;
 
-  const isValidEmail = (email) => {
-    // Add your email validation logic here
-    return true; // For simplicity, always return true in this example
-  };
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/user/${userId}`, {
+          withCredentials: true,
+        });
 
-  const handleChange = (e) => {
+        setUser(response.data);
+      } catch (error) {
+        showError('Error fetching user details. Please try again.');
+        console.error('Error fetching user details:', error);
+      }
+    };
+
+    fetchUserData();
+  }, [userId, showError]);
+
+  const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prevData) => ({ ...prevData, [name]: value }));
-    setValidationErrors((prevErrors) => ({ ...prevErrors, [name]: '' }));
+
+    setUser((prevUser) => ({
+      ...prevUser,
+      [name]: value,
+    }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const errors = validateForm();
-    if (Object.keys(errors).length === 0) {
-      // No validation errors, call the onSave event handler
-      onSave(formData);
-      // Close the editor
-      onClose();
-    } else {
-      // Update validation errors
-      setValidationErrors(errors);
+    try {
+      const userData = { ...user };
+      delete userData.password; // Exclude password from the payload
+      delete userData._id;
+      delete userData.email;
+      delete userData.createdAt;
+      delete userData.lastUpdatedBy;
+      delete userData.lastUpdatedOn;
+
+      await axios.put(
+        `${import.meta.env.VITE_API_URL}/api/user/${userId}`,
+        userData,
+        {
+          withCredentials: true,
+        }
+      );
+
+      showSuccess('User updated successfully');
+      navigate('/user/list'); // Redirect to user list after a successful update
+    } catch (error) {
+      showError('Error updating user. Please try again.');
+      console.error('Error updating user:', error);
     }
   };
 
   return (
-    <MDBContainer fluid>
-      <MDBRow className='d-flex justify-content-center align-items-center h-100'>
-        <MDBCol col='12'>
-          <MDBCard className='my-5 mx-auto' style={{ borderRadius: '1rem', maxWidth: '600px', background: '#343a40' }}>
-            <MDBCardBody className='p-5'>
-              <h2 className="fw-bold mb-2 text-uppercase" style={{ color: '#007bff' }}>Edit User</h2>
-
-              <form onSubmit={handleSubmit} className="w-100">
-                <MDBInput
-                  wrapperClass='mb-4 mx-auto w-75'
-                  labelClass='text-white'
-                  label='Full Name'
-                  id='fullName'
-                  type='text'
-                  name='fullName'
-                  size="lg"
-                  value={formData.fullName}
-                  onChange={handleChange}
-                  errorMessage={validationErrors.fullName}
-                  background='#424242'
-                  outline
-                />
-
-                <MDBInput
-                  wrapperClass='mb-4 mx-auto w-75'
-                  labelClass='text-white'
-                  label='Email'
-                  id='email'
-                  type='email'
-                  name='email'
-                  size="lg"
-                  value={formData.email}
-                  onChange={handleChange}
-                  errorMessage={validationErrors.email}
-                  background='#424242'
-                  outline
-                />
-
-                {/* Add other form fields as needed */}
-
-                <MDBBtn
-                  outline
-                  className='mb-4 mx-auto w-75 d-flex justify-content-center'
-                  color='white'
-                  size='lg'
-                  type="submit"
-                  style={{ background: '#007bff', borderColor: '#007bff', width: '75%' }}
-                >
-                  Save
-                </MDBBtn>
-              </form>
-            </MDBCardBody>
-          </MDBCard>
-        </MDBCol>
-      </MDBRow>
-    </MDBContainer>
+    <>
+      <h1>User Editor</h1>
+      <form onSubmit={handleSubmit}>
+        <div className='mb-3'>
+          <label htmlFor='email' className='form-label'>
+            Email
+          </label>
+          <input
+            type='email'
+            className='form-control'
+            id='email'
+            name='email'
+            value={email}
+            onChange={handleInputChange}
+          />
+        </div>
+        <div className='mb-3'>
+          <label htmlFor='givenName' className='form-label'>
+            Given Name
+          </label>
+          <input
+            type='text'
+            className='form-control'
+            id='givenName'
+            name='givenName'
+            value={givenName}
+            onChange={handleInputChange}
+          />
+        </div>
+        <div className='mb-3'>
+          <label htmlFor='familyName' className='form-label'>
+            Family Name
+          </label>
+          <input
+            type='text'
+            className='form-control'
+            id='familyName'
+            name='familyName'
+            value={familyName}
+            onChange={handleInputChange}
+          />
+        </div>
+        <div className='mb-3'>
+          <label htmlFor='fullName' className='form-label'>
+            Full Name
+          </label>
+          <input
+            type='text'
+            className='form-control'
+            id='fullName'
+            name='fullName'
+            value={fullName}
+            onChange={handleInputChange}
+          />
+        </div>
+        <div className='mb-3'>
+          <label htmlFor='role' className='form-label'>
+            Role
+          </label>
+          <input
+            type='text'
+            className='form-control'
+            id='role'
+            name='role'
+            value={role}
+            onChange={handleInputChange}
+          />
+        </div>
+        <button type='submit' className='btn btn-primary'>
+          Update User
+        </button>
+      </form>
+    </>
   );
 };
 

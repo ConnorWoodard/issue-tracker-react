@@ -6,11 +6,15 @@ import BugList from './components/BugList';
 import BugListItem from './components/BugListItem';
 import UserList from './components/UserList';
 import UserListItem from './components/UserListItem';
+import UserEditor from './components/UserEditor';
+import BugEditor from './components/BugEditor';
 import CustomNavbar from './components/CustomNavbar';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.min.css';
 import Footer from './components/Footer';
 import axios from 'axios';
+
+
 
 
 
@@ -84,9 +88,9 @@ const App = () => {
         <Route path="/login" element={<LoginForm onLogin={onLogin} onSwitchScreen={() => switchScreen('register')} showError={showError}  />} />
         <Route path="/register" element={<RegisterForm onLogin={onLogin} showError={showError} />} />
         <Route path="/bug/list" element={<BugList auth={auth} showError={showError} showSuccess={showSuccess} />} />
-        <Route path="/bug/:bugId" element={<BugListItem />} />
-        <Route path="/user/list" element={<UserList />} />
-        {/* <Route path="/user/:userId" element={<UserEditor />} /> */}
+        <Route path="/bug/:bugId" element={<BugEditor showError={showError} showSuccess={showSuccess} />} />
+        <Route path="/user/list" element={<UserList itemComponent={UserListItem} />} />
+        <Route path="/user/:userId" element={<UserEditor showError={showError} showSuccess={showSuccess}/>} />
         {/* <Route path="*" element={<NotFound />} /> */}
       </Routes>
       </main>
