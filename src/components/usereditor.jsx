@@ -9,31 +9,55 @@ const UserEditor = ({ showError, showSuccess }) => {
   const navigate = useNavigate();
 
   const [user, setUser] = useState({
-    email: '',
-    password: '', // not returned by API
     givenName: '',
     familyName: '',
     fullName: '',
     role: '',
   });
 
-  const { email, givenName, familyName, fullName, role } = user;
+  const { givenName, familyName, fullName, role, loggedInUser } = user;
 
-  useEffect(() => {
-    const fetchUserData = async () => {
+  const handleDelete = async () => {
+    if (loggedInUser && loggedInUser.role.includes('Technical Manager')) {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/user/${userId}`, {
+        await axios.delete(`${import.meta.env.VITE_API_URL}/api/user/${userId}`, {
           withCredentials: true,
         });
+        showSuccess('User deleted successfully');
+        navigate('/user/list'); // Redirect to user list after successful deletion
+      } catch (error) {
+        showError('Error deleting user. Please try again.');
+        console.error('Error deleting user:', error);
+      }
+    } else {
+      showError('You are not authorized to delete this user.');
+    }
+  };
 
-        setUser(response.data);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Make two requests in parallel
+        const [userResponse, loggedInUserResponse] = await Promise.all([
+          axios.get(`${import.meta.env.VITE_API_URL}/api/user/${userId}`, {
+            withCredentials: true,
+          }),
+          axios.get(`${import.meta.env.VITE_API_URL}/api/user/me`, {
+            withCredentials: true,
+          }),
+        ]);
+
+        setUser({
+          ...userResponse.data,
+          loggedInUser: loggedInUserResponse.data,
+        });
       } catch (error) {
         showError('Error fetching user details. Please try again.');
         console.error('Error fetching user details:', error);
       }
     };
 
-    fetchUserData();
+    fetchData();
   }, [userId, showError]);
 
   const handleInputChange = (e) => {
@@ -45,21 +69,57 @@ const UserEditor = ({ showError, showSuccess }) => {
     }));
   };
 
+const handleRoleChange = (e) => {
+  if (loggedInUser && loggedInUser.role.includes('Technical Manager')) {
+    const { value } = e.target;
+    let roleValue;
+
+    switch (value) {
+      case 'Technical Manager':
+      case 'Quality Analyst':
+      case 'Developer':
+      case 'Business Analyst':
+      case 'Project Manager':
+        roleValue = value;
+        break;
+      default:
+        roleValue = user.role;
+    }
+
+    setUser((prevUser) => ({
+      ...prevUser,
+      role: roleValue,
+      lastUpdatedOn: new Date().toLocaleString('en-US'),
+      lastUpdatedBy: {
+        userId: loggedInUser._id,
+        fullName: loggedInUser.fullName,
+        email: loggedInUser.email,
+      },
+    }));
+  } else {
+    showError('You are not authorized to update this user.');
+  }
+};
+
+
+
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    if (loggedInUser && loggedInUser.role.includes('Technical Manager')) {
     try {
-      const userData = { ...user };
-      delete userData.password; // Exclude password from the payload
-      delete userData._id;
-      delete userData.email;
-      delete userData.createdAt;
-      delete userData.lastUpdatedBy;
-      delete userData.lastUpdatedOn;
+      // Send updated user details to the server
+
+      const updatedUser = {
+        givenName,
+        familyName,
+        fullName,
+        role,
+        };
 
       await axios.put(
         `${import.meta.env.VITE_API_URL}/api/user/${userId}`,
-        userData,
+        updatedUser,
         {
           withCredentials: true,
         }
@@ -71,25 +131,13 @@ const UserEditor = ({ showError, showSuccess }) => {
       showError('Error updating user. Please try again.');
       console.error('Error updating user:', error);
     }
+  }
   };
 
   return (
     <>
       <h1>User Editor</h1>
       <form onSubmit={handleSubmit}>
-        <div className='mb-3'>
-          <label htmlFor='email' className='form-label'>
-            Email
-          </label>
-          <input
-            type='email'
-            className='form-control'
-            id='email'
-            name='email'
-            value={email}
-            onChange={handleInputChange}
-          />
-        </div>
         <div className='mb-3'>
           <label htmlFor='givenName' className='form-label'>
             Given Name
@@ -133,18 +181,28 @@ const UserEditor = ({ showError, showSuccess }) => {
           <label htmlFor='role' className='form-label'>
             Role
           </label>
-          <input
-            type='text'
+          <select
             className='form-control'
             id='role'
             name='role'
             value={role}
-            onChange={handleInputChange}
-          />
+            onChange={handleRoleChange}
+          >
+            <option value='Technical Manager'>Technical Manager</option>
+            <option value='Quality Analyst'>Quality Analyst</option>
+            <option value='Developer'>Developer</option>
+            <option value='Business Analyst'>Business Analyst</option>
+            <option value='Product Manager'>Product Manager</option>
+          </select>
         </div>
         <button type='submit' className='btn btn-primary'>
           Update User
         </button>
+        {loggedInUser && loggedInUser.role.includes('Technical Manager') && (
+        <button type='button' className='btn btn-danger' onClick={handleDelete}>
+          Delete User
+        </button>
+      )}
       </form>
     </>
   );

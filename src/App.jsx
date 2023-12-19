@@ -8,7 +8,11 @@ import UserList from './components/UserList';
 import UserListItem from './components/UserListItem';
 import UserEditor from './components/UserEditor';
 import BugEditor from './components/BugEditor';
+import BugDetail from './components/BugDetail';
+import BugReport from './components/BugReport';
 import CustomNavbar from './components/CustomNavbar';
+import ForgotPassword from './components/ForgotPassword';
+import ResetPassword from './components/ResetPassword';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.min.css';
 import Footer from './components/Footer';
@@ -88,9 +92,13 @@ const App = () => {
         <Route path="/login" element={<LoginForm onLogin={onLogin} onSwitchScreen={() => switchScreen('register')} showError={showError}  />} />
         <Route path="/register" element={<RegisterForm onLogin={onLogin} showError={showError} />} />
         <Route path="/bug/list" element={<BugList auth={auth} showError={showError} showSuccess={showSuccess} />} />
-        <Route path="/bug/:bugId" element={<BugEditor showError={showError} showSuccess={showSuccess} />} />
+        <Route path="/bug/edit/:bugId" element={<BugEditor showError={showError} showSuccess={showSuccess} />} />
+        <Route path="/bug/detail/:bugId" element={<BugDetail />} />
+        <Route path="/bug/report" element={<BugReport showError={showError} showSuccess={showSuccess} />} />
         <Route path="/user/list" element={<UserList itemComponent={UserListItem} />} />
         <Route path="/user/:userId" element={<UserEditor showError={showError} showSuccess={showSuccess}/>} />
+        <Route path='/forgot-password' element={<ForgotPassword />} />
+        <Route path='/reset-password/:resetToken' element={<ResetPassword />} />
         {/* <Route path="*" element={<NotFound />} /> */}
       </Routes>
       </main>

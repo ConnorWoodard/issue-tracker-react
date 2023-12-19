@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { Link } from 'react-router-dom';
 import { MDBBtn, MDBContainer, MDBRow, MDBCol, MDBCard, MDBCardBody, MDBInput } from 'mdb-react-ui-kit';
 import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.min.css';
 
-const RegisterForm = ({ onLogin, showError }) => {
+const RegisterForm = ({ onLogin, showError, onNavigateToLogin }) => {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
     givenName: '',
     familyName: '',
-    fullName: '', // Added fullName field
+    fullName: '',
   });
 
   const [errors, setErrors] = useState({
@@ -37,10 +37,10 @@ const RegisterForm = ({ onLogin, showError }) => {
 
     try {
       // Send POST request to register endpoint with form data
-      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/user/register`, formData,{
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/user/register`, formData, {
         withCredentials: true,
       });
-      
+
       // If successful, call the onLogin handler
       onLogin(response.data); // Assuming your API returns the user data
 
@@ -154,6 +154,11 @@ const RegisterForm = ({ onLogin, showError }) => {
               {errors.fullName && <div className="text-danger mb-3">{errors.fullName}</div>}
 
               <MDBBtn className='w-100 mb-4' size='md' onClick={handleSubmit}>Sign up</MDBBtn>
+
+              {/* Link for users who already have an account */}
+              <div>
+                <p className="mb-0 text-black">Already have an account? <Link to="/login" className="text-black-50 fw-bold" onClick={onNavigateToLogin}>Login</Link></p>
+              </div>
             </MDBCardBody>
           </MDBCard>
         </MDBCol>

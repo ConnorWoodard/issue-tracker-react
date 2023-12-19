@@ -58,6 +58,11 @@ const CustomNavbar = ({ auth, onLogout }) => {
                   </Link>
                 </li>
                 <li className="nav-item">
+                  <Link to="/bug/report" className="nav-link text-white">
+                    Report Bug
+                  </Link>
+                </li>
+                <li className="nav-item">
                   <Link to="/login" className="nav-link text-white" onClick={(evt) => onClickLogout(evt)}>
                     Logout
                   </Link>

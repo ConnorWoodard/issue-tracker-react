@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { MDBBtn, MDBContainer, MDBRow, MDBCol, MDBCard, MDBCardBody, MDBInput } from 'mdb-react-ui-kit';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.min.css';
 import '../register.css';
 
 function LoginForm({ onLogin, onNavigateToRegister, showError }) {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -80,33 +81,35 @@ function LoginForm({ onLogin, onNavigateToRegister, showError }) {
             <MDBCardBody className='p-5 d-flex flex-column align-items-center mx-auto w-100'>
               <h2 className="fw-bold mb-2 text-uppercase">Login</h2>
               <p className="text-white-50 mb-5">Please enter your login and password!</p>
-
+              <script src="https://www.google.com/recaptcha/enterprise.js?render=6LdPoCgpAAAAAN9J7jsUbhUPNkMsSa3g-Lm7fVIe"></script>
               <form onSubmit={handleSubmit} className="w-100">
-                <MDBInput
-                  wrapperClass='mb-4 mx-auto w-75'
-                  labelClass='text-white'
-                  label='Email address'
-                  id='email'
-                  type='email'
-                  name='email'
-                  size="lg"
-                  value={formData.email}
-                  onChange={handleChange}
-                />
-                {errors.email && <div className="text-danger mb-3">{errors.email}</div>}
+              <MDBInput
+                wrapperClass='mb-4 mx-auto w-75'
+                labelClass='text-grey'
+                label='Email address'
+                id='email'
+                type='email'
+                name='email'
+                size="lg"
+                value={formData.email}
+                onChange={handleChange}
+                style={{ color: '#000', backgroundColor: '#fff' }} // Add this style to change text color and background color
+              />
+              {errors.email && <div className="text-danger mb-3">{errors.email}</div>}
 
-                <MDBInput
-                  wrapperClass='mb-4 mx-auto w-75'
-                  labelClass='text-white'
-                  label='Password'
-                  id='password'
-                  type='password'
-                  name='password'
-                  size="lg"
-                  value={formData.password}
-                  onChange={handleChange}
-                />
-                {errors.password && <div className="text-danger mb-3">{errors.password}</div>}
+              <MDBInput
+                wrapperClass='mb-4 mx-auto w-75'
+                labelClass='text-grey'
+                label='Password'
+                id='password'
+                type='password'
+                name='password'
+                size="lg"
+                value={formData.password}
+                onChange={handleChange}
+                style={{ color: '#000', backgroundColor: '#fff' }} // Add this style to change text color and background color
+              />
+              {errors.password && <div className="text-danger mb-3">{errors.password}</div>}
 
                 <MDBBtn
                   outline
@@ -120,7 +123,7 @@ function LoginForm({ onLogin, onNavigateToRegister, showError }) {
                 </MDBBtn>
               </form>
 
-              <p className="small mb-3 pb-lg-2"><Link to="/forgot-password" className="text-white-50">Forgot password?</Link></p>
+              <p className="small mb-3 pb-lg-2"><Link to="/forgot-password" className="text-white-50" onClick={() => navigate('/forgot-password')}>Forgot password?</Link></p>
               <div className='d-flex flex-row mt-3 mb-5'>
                 {/* ... (social media buttons) */}
               </div>
